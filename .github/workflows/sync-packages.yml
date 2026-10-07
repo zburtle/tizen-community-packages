@@ -1,9 +1,6 @@
 name: Sync Tizen Community Packages
 
 on:
-  schedule:
-    # 04:00 UTC daily — 05:00 CET (winter) / 06:00 CEST (summer) in Brussel
-    - cron: '23 2 * * *' 
   workflow_dispatch:
     inputs:
       force:
@@ -515,36 +512,6 @@ jobs:
 
           echo "Final WGT files:"
           ls -l final_wgts
-
-      - name: Create and push release tag
-        env:
-          TAG: "community-${{ github.run_number }}"
-        run: |
-          set -e
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          if git ls-remote --exit-code --tags origin "refs/tags/$TAG" >/dev/null 2>&1; then
-            echo "Tag $TAG already exists on origin — reusing it."
-          else
-            git tag -a "$TAG" -m "Community Packages ${{ github.run_number }}"
-            git push origin "$TAG"
-          fi
-
-      - uses: softprops/action-gh-release@v2
-        with:
-          tag_name: "community-${{ github.run_number }}"
-          name: "Community Packages ${{ github.run_number }}"
-          target_commitish: ${{ github.sha }}
-          files: |
-            final_wgts/*.wgt
-            final_wgts/*.tpk
-          body: |
-            Automated community bundle.
-
-            **Changes since last bundle:**
-            ${{ needs.detect-changes.outputs.changes_summary }}
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   update-state:
     runs-on: ubuntu-latest
